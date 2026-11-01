@@ -233,3 +233,119 @@ Több elem ugyanarra a SWITCH-re (`trigger: swapps`), `ADVANCED`, egyre nagyobb 
 ```
 LOADING  $mu(round, df(s)*100/60)+2$%
 ```
+
+## Újabb minták (10–17. példafájl, több szerzőtől)
+
+### Időjárás-előrejelzés napváltóval ✅
+
+```
+wfcount (TEXT globális): 0…6  — gombok: SWITCH_GLOBAL, switch: wfcount, switch_text: "4"
+Nap neve:   $df(EEE, a4d)$   🔧 (a példában: $df(tc(reg,gv(dtformat),"@","/"), a4d)$, napokként a0d…a6d)
+Min / max:  [b]$wf(min, gv(wfcount))$°[/b][s=0.8] / $wf(max, gv(wfcount))$°[/s]
+Eső:        $wf(rain, gv(wfcount))$[s=0.8] mm[/s]
+Légnyomás:  $wf(press, gv(wfcount))$[s=0.8] mbar[/s]
+Szél:       $wf(wspeedm, gv(wfcount))$[s=0.8] mps[/s]
+```
+
+### Aktuális vagy előrejelzett ikon, nappal/éjszaka ✅
+
+```
+day (LIST, komponensben): entries "Current, 0, 1, 2, 3, 4, 5, 6, 7"
+$if(if(gv(day)=current, wi(icon), wf(icon, gv(day)))=CLEAR & ai(isday)=1, A)$
+$if(if(gv(day)=current, wi(icon), wf(icon, gv(day)))=CLEAR & ai(isday)=0, a)$
+...  (a betűk egy időjárás-betűtípus karakterei)
+Egyszerű nap/hold ikon: $if(ai(isday)=1, Sun, Moon)$
+```
+
+### Időjárás-mondat ✅
+
+```
+$tc(cap,wi(cond))$, $wi(temp)$°$wi(tempu)$ now. Feels like $wi(flik)$°$wi(tempu)$.
+Hely: [b]$tc(up,li(loc)+", "+li(country))$[/b]
+```
+
+### Olvasatlanok összesítve ✅
+
+```
+$if(uc(sms)+uc(calls)+uc(gmail)=0,"you don't have misses.","you have "+(uc(sms)+uc(calls)+uc(gmail))+" miss"+if(uc(sms)+uc(calls)+uc(gmail)>1,"es",""))$
+```
+(a példában nincs szóköz a szavak körül, itt kiegészítve 🔧)
+
+### Utolsó értesítés kártya ✅
+
+```
+Ikon (BitmapModule, bitmap_bitmap): $ni(0, icon)$
+Szöveg: $ni(0, text)$
+Idő:    $tf(ni(0, time))$
+Bezárás gomb: KUSTOM_ACTION, kustom_action: NOTIF_CLOSE, notification: "0"
+```
+
+### Zene: lejátszó neve és animált pontok ✅
+
+```
+$if(ni(mi(package),app)="","- / -","Playing by "+ni(mi(package),app))$
+[b]$tc(up,if(mi(state)!=playing,Pause,"Now playing."+fl(1, tu(seq, 0.01,1,3), "i + 1", ".")))$[/b]
+Szín a borítóból: $bp(muted, mi(cover))$
+```
+
+### Háttérkép-választó + automatikus témaszín ✅
+
+```
+img1…img6 (BITMAP globálisok), bg (LIST: img1,…,img6), mode (LIST: vibrant, dominant, muted)
+Háttér (background_bitmap): $gv(gv(bg))$
+Gomb: SWITCH_GLOBAL, switch: bg, switch_list: img3
+Témaszín: $bp(gv(mode), gv(gv(bg)))$
+```
+
+### Mai naptáresemény részletei ✅
+
+```
+Cím:      $ci(title, 0, a0d)$
+Idő:      [b]$df(gv(tmformat),ci(start, e0, a0d))$ - $df(gv(tmformat),ci(end, e0, a0d))$[/b]
+Helyszín: $if(ci(loc, 0 ,a0d)="","- / -",ci(loc, 0 ,a0d))$
+Leírás:   $if(ci(desc, 0 ,a0d)="","- / -",ci(desc, 0 ,a0d))$
+```
+
+### Következő ébresztés, rendszeradatok ✅
+
+```
+$df("EEE hh:mma", si(alarmd))$
+$si(model)$ · Android $si(aver)$
+Tárhely: $mu(round, rm(fsused)/rm(fstot)*100)$%
+```
+
+### Napi idézet XML-ből ✅
+
+```
+$wg("api.theysaidso.com/qod.xml", xml, "//quote")$
+[b]$wg("api.theysaidso.com/qod.xml", xml, "//author")$[/b]
+```
+(Hogy ez a szolgáltatás ma is működik-e, nem ellenőriztem. ❓)
+
+### RSS hírolvasó léptetéssel ✅
+
+```
+Cím: [b]$tc(up,tc(html,wg(gv(rsslink), rss, gv(fdcount), title)))$[/b]
+Iniciálé: [s=2]$tc(cut,tc(html,wg(gv(rsslink), rss, gv(fdcount), desc)),1)$[/s]
+Következő hír gomb: SWITCH_GLOBAL, switch: fdcount,
+  switch_text: $if(gv(fdcount)>=wg(gv(rsslink), rss, count)-1,0,gv(fdcount)+1)$
+```
+
+### Térkép háttér URL-ből ✅ (a KoolKit Maps elve)
+
+Egy alakzat `fx_gradient: BITMAP` + `fx_gradient_bitmap` mezőjébe statikus térkép-URL kerül, amibe képletek írják be a helyet:
+```
+https://<térképszolgáltató>/staticmap?center=lonlat:$li(lon)$,$li(lat)$&zoom=$gv("002/001/zoom")/1000$&width=$mu(round,gv("002/001/width"),0)$...&apiKey=<SECRET globális>
+```
+A szolgáltatók API-ja és kulcsigénye változhat. ❓ Az API-kulcsot SECRET globálisban kell tárolni.
+
+### Animációk zárolás/feloldás és kapcsoló szerint ✅
+
+- Feloldáskor: `type: UNLOCK`, `action: SCALE_INVERTED`, `amount: 5`, `duration: $gv(speed)$`.
+- Csak feloldott képernyőn gyorsabb: `duration: $gv(speed)*if(si(locked),1,0.5)$`.
+- Csúszka-panel: `type: SWITCH`, `trigger: slider`, `action: FADE_INVERTED` / `SCALE`, `delay: $if(gv(slider)=0,1,0)$`.
+- Kifelé nagyítás a képernyő sarkából: `action: SCALE`, `anchor: SCREEN_TOP_RIGHT`, `ease: INVERTED`.
+
+### GIF animáció ✅
+
+MovieModule, `bitmap_movie_uri`: GIF fájl. Kapcsolóval váltva: `$if(gv(switch)=1,gv(anim2),gv(anim1))$`, színezés: `bitmap_filter: $if(gv(switch)=1,hue,none)$`.

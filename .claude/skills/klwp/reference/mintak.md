@@ -159,9 +159,77 @@ Mai esemény van-e: $ci(ecount,gv(year)+y+gv(month)+M+gv(day)+d)+ci(acount,gv(ye
 ## Animációs minták ✅
 
 - **Beúszás alulról**: `FORMULA` + `ADVANCED`, kulcskockák: 0% → `Y_OFFSET 30`, `OPACITY 100`; 100% → `Y_OFFSET 0`, `OPACITY 0`.
-  ⚠️ A példák beúszó animációiban az `OPACITY` mindig 100 → 0 irányú. Ebből arra lehet következtetni, hogy az animátorban az `OPACITY` az átlátszóság mértéke (100 = teljesen átlátszó), és nem az átlátszatlanságé. Kipróbálással ellenőrizd.
+  ❓ Az `OPACITY` 100 → 0 irány a gyakoribb a példákban, de a fordítottja is előfordul, így nem tudni biztosan, hogy a 100 a látható vagy az átlátszó állapot. Kipróbálással ellenőrizd.
 - **Megjelenés nagyítással kapcsolóra**: `formula: $if(gv(txta)=1,1,0)$`, `SCALE_XY` 0 → 1.
 - **Folyamatos ingás**: `LOOP_2W` + `ADVANCED`, `ROTATE` 100% → 20, `ease: OVERSHOOT`, `duration: $gv(anispd)+5$`.
 - **Folyamatos forgás**: `LOOP_FW` + `ROTATE`, `duration: 20`.
 - **Lebegés**: `LOOP_2W`, `Y_OFFSET` 0 → -5 → 0 → 5 → 0 (0/25/50/75/100%).
 - Az animáció sebességét egy NUMBER globális (`anispd`) adja, így egy helyen állítható. ✅
+
+## Újabb minták (4–9. példafájl)
+
+### Állapotmondat egy szövegben ✅ (rövidítve)
+
+```
+Your battery is $if(bi(source)=Battery,discharged,charging)$ at $bi(level)$%.
+$if(nc(wifi)=disabled,"Your wifi connection is off now.",
+ if(nc(wifi)=connected,"Your current wifi connection is "+nc(ssid)+".","You are not connected to any wifi network."))$
+And you are on $nc(operator)$ operator now.
+```
+
+### Lejátszás/szünet gomb ✅
+
+```
+Ikon (entypo, icon_icon): $if(mi(state)!=playing,Triangle-right,Controller-paus)$
+Esemény: MUSIC, music_action: PLAY_PAUSE
+Zene folyamatjelző szélessége (Shape shape_width): $mi(percent)*480/100+50$
+```
+
+### Témaszín a háttérképből ✅
+
+```
+Kiemelő szín: $ce(bp(vibrant, gv(picl)),alpha,50)$
+Olvasható szöveg: $ce(bp(dominant, gv(picl)),contrast)$
+```
+
+### Ma / holnap / dátum a következő naptáreseményhez ✅ (egyszerűsítve)
+
+```
+$if(df(MM/dd/yyyy, ci(start, 0))=df(MM/dd/yyyy),Today,
+ df(MM/dd/yyyy, ci(start, 0))=df(MM/dd/yyyy, a1d),Tomorrow,
+ df(EEEE, ci(start, 0))+", "+df(MMMM, ci(start, 0))+" "+df(d, ci(start, 0))+tc(ord, df(d, ci(start, 0))))$
+Esemény címe: $tc(up,ci(title, 0))$
+```
+
+Magyar változat 🔧: `Today` → `Ma`, `Tomorrow` → `Holnap`. A `tc(ord, ...)` angol ragot ad, magyarhoz helyette `+"."` kell (`november 5.`).
+
+### Váltakozó tartalom másodpercek szerint ✅
+
+6 másodpercenként más eseményt mutat (0–4. esemény):
+
+```
+$if(df(ss)>=00 & df(ss)<=05,ci(title, 0), df(ss)>=06 & df(ss)<=11,ci(title, 1), ... )$
+Animáció ugyanerre (FORMULA, formula mező): $if(df(ss)=00,f,df(ss)=06,f,df(ss)=12,f,...,r)$
+```
+
+### Értesítésjelző pulzálás csak új értesítésnél ✅
+
+```
+Animáció type mezője (képlet): $if(ni(pcount, gv(emlpkg))>=1,loop_2w,FORMULA)$
+action: SCALE_INVERTED, amount: 0.5, duration: 3
+A csomagnév globálisban (emlpkg, smspkg, phnpkg), így a felhasználó cserélheti.
+```
+
+### Lépcsőzetes beúszás kapcsolóra ✅
+
+Több elem ugyanarra a SWITCH-re (`trigger: swapps`), `ADVANCED`, egyre nagyobb kezdő `Y_OFFSET`-tel (120 / 240 / 360) és `delay`-jel (0 / 1 / 2). A `duration`: `$gv(anispd)$`.
+
+### Gombnyomás-visszajelzés ✅
+
+`SWITCH` + `ADVANCED`, `SCALE_XY` 1 → 0.85 → 1 (0/50/100%), `duration: 1`.
+
+### Betöltés-szimuláció ✅
+
+```
+LOADING  $mu(round, df(s)*100/60)+2$%
+```

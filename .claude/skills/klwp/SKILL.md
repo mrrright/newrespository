@@ -1,11 +1,11 @@
 ---
 name: klwp
-description: KLWP (Kustom Live Wallpaper, Android) élő háttérképek tervezése és kódolása — képletek ($...$ formula language: gv, df, wi, mi, bi, si, if, ce, ni, nc, uc, tc, mu, tf, wg, ci, rm, li, tu), globális változók, elemek, érintési események, animációk, és .klwp preset fájlok (zip + preset.json) elemzése. Használd, ha a felhasználó KLWP/Kustom háttérképet, KWGT widgetet, Kustom képletet vagy .klwp/.komp fájlt említ, vagy élő Android háttérképet szeretne funkciókkal (óra, időjárás, zene, akkumulátor, értesítések, naptár).
+description: KLWP (Kustom Live Wallpaper, Android) élő háttérképek tervezése és kódolása — képletek ($...$ formula language: gv, df, wi, mi, bi, si, if, ce, bp, ni, nc, uc, tc, mu, tf, wg, ci, rm, li, tu), globális változók, elemek, érintési események, animációk, és .klwp preset fájlok (zip + preset.json) elemzése. Használd, ha a felhasználó KLWP/Kustom háttérképet, KWGT widgetet, Kustom képletet vagy .klwp/.komp fájlt említ, vagy élő Android háttérképet szeretne funkciókkal (óra, időjárás, zene, akkumulátor, értesítések, naptár).
 ---
 
 # KLWP skill
 
-Ez a skill három valódi KLWP preset (összesen kb. 9000 képlet, 2400 elem) elemzéséből készült. A szabályok forrását mindenhol jelöljük:
+Ez a skill 9 valódi KLWP preset (kb. 13 500 képlet, 4000+ elem) elemzéséből készült. 8 preset ugyanattól a szerzőtől van, egy mástól. A szabályok forrását mindenhol jelöljük:
 
 - ✅ **Igazolt**: a példafájlokban szerepel, a jelentése egyértelmű.
 - ⚠️ **Megfigyelt**: a példafájlokban szerepel, de a pontos jelentése következtetés.
@@ -26,7 +26,7 @@ Ez a skill három valódi KLWP preset (összesen kb. 9000 képlet, 2400 elem) el
 2. Feltétel: `if(feltétel, igaz, hamis)`, és **több ág egy if-ben**: `if(f1, e1, f2, e2, ..., különben)`. ✅
 3. Operátorok: `=`, `!=`, `<`, `>`, `<=`, `>=`, `&` (és), `|` (vagy), `+ - * / %`, zárójelezés. ✅
 4. Szöveg idézőjel nélkül is működik (`never`, `Unknown Artist`), de szóközös/vesszős szöveget tegyél `"..."` közé. ✅
-5. **Felsorolt értékek képletből kisbetűvel**: `always`, `never`, `remove`, `radial`, `none`, `stroke`, `fill`, `solid`, `image`, `desaturate`, `loop_2w`, `disabled`. A JSON-ban tárolt fix értékek nagybetűsek (`ALWAYS`, `RADIAL`). ✅
+5. **Felsorolt értékek képletből kisbetűvel**: `always`, `never`, `remove`, `radial`, `none`, `stroke`, `fill`, `solid`, `image`, `desaturate`, `loop_2w`, `disabled`. Ez a szokás ✅. A nagybetű valószínűleg szintén működik ⚠️. A JSON-ban tárolt fix értékek nagybetűsek (`ALWAYS`, `RADIAL`).
 6. Színek `#AARRGGBB` formában (`#FF181818`), színműveletek `ce()`-vel. ✅
 7. Méretezz a képernyőhöz, ne fix pixelre: `$(si(rwidth)+si(rheight))/116$`, `$si(rwidth)*3.475/100$`. Mindhárom preset így csinálja. ✅
 8. Egy témát globális változókra építs (szín, betűtípus, kapcsolók), és az elemek ezekre hivatkozzanak `gv()`-vel. Ez a példák legfontosabb mintája (a képletek ~65%-a `gv()`). ✅

@@ -385,9 +385,11 @@ def app_lists():
 
 
 def debug_line():
-    return text("$gv(st)$ · age $gv(age)$ · open $gv(open)$ · z $gv(z)$ · rot $gv(rot)$",
-                size="$(si(rwidth)+si(rheight))/140$", color="$gv(c_dim)$", anchor="BOTTOM", title="Debug",
-                extra_f=dict(vis("gv(debug)=1"), position_padding_bottom="$si(rheight)*0.03$"))
+    big = "$(si(rwidth)+si(rheight))/45$"
+    return stack([text("[b]$gv(st)$[/b]", size=big, color="#FFB0B0B0"),
+                  text("kor $gv(age)$ · nyitva $gv(open)$ · zóna $gv(z)$", size=big, color="#FFB0B0B0")],
+                 "VERTICAL_CENTER", anchor="BOTTOM", title="Debug",
+                 f=dict(vis("gv(debug)=1"), position_padding_bottom="$si(rheight)*0.04$"))
 
 
 # ---------------------------------------------------------------- összeállítás

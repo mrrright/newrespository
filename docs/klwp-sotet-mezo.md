@@ -62,12 +62,12 @@ Teljesen fekete AMOLED képernyő. Alapból csak egy hajszálvékony vonal láts
 
 | Név | Típus | Érték / képlet | Leírás |
 |---|---|---|---|
-| `st` | TEXT | kezdőérték: `t00000cxxxx` | **az egész állapot egy szövegben** (lásd 3.2) |
+| `st` | TEXT | kezdőérték: `t100000cxxxx` | **az egész állapot egy szövegben** (lásd 3.2) |
 | `now` | TEXT | `$df(H)*3600+df(mm)*60+df(ss)$` | a nap eltelt másodpercei 🔧 |
-| `tt` | TEXT | `$tc(cut,gv(st),1,5)$` | az utolsó koppintás ideje ⚠️ |
-| `fl` | TEXT | `$tc(cut,gv(st),6,1)$` | `o` = nyitva, `c` = zárva ⚠️ |
-| `sq` | TEXT | `$tc(cut,gv(st),7,4)$` | az utolsó 4 koppintott zóna ⚠️ |
-| `z` | TEXT | `$tc(cut,gv(st),10,1)$` | a legutóbbi zóna ⚠️ |
+| `tt` | TEXT | `$tc(cut,gv(st),1,6)-100000$` | az utolsó koppintás ideje ⚠️ |
+| `fl` | TEXT | `$tc(cut,gv(st),7,1)$` | `o` = nyitva, `c` = zárva ⚠️ |
+| `sq` | TEXT | `$tc(cut,gv(st),8,4)$` | az utolsó 4 koppintott zóna ⚠️ |
+| `z` | TEXT | `$tc(cut,gv(st),11,1)$` | a legutóbbi zóna ⚠️ |
 | `age` | TEXT | `$if(gv(now)>=gv(tt),gv(now)-gv(tt),gv(now)+86400-gv(tt))$` | hány mp telt el azóta (éjfélen át is) 🔧 |
 | `open` | TEXT | `$if(gv(fl)=o & gv(age)<gv(nyitido) & si(locked)=0,1,0)$` | **nyitva van-e a vezérlés** 🔧 |
 | `rot` | TEXT | `$if(gv(forgat)=1,df(H)%9,0)$` | átrendeződési eltolás (0–8) 🔧 |
@@ -110,7 +110,7 @@ Betűket használok számok helyett, mert a `+` csupa számjegyű szövegeket va
 **Minden zóna eseménye:** `SWITCH_GLOBAL`, switch: `st`, és a switch_text képlete az „a” zónánál (a többinél csak az utolsó `"a"` betű más):
 
 ```
-$"t"+tc(lpad,gv(now),5,0)+if(gv(open)=1|tc(cut,gv(sq),1,3)+"a"=gv(kod),"o","c")+tc(cut,gv(sq),1,3)+"a"$
+$"t"+(gv(now)+100000)+if(gv(open)=1|tc(cut,gv(sq),1,3)+"a"=gv(kod),"o","c")+tc(cut,gv(sq),1,3)+"a"$
 ```
 
 Jelentése: új idő + (ha eddig is nyitva volt, VAGY az utolsó 3 zóna + ez a mostani = a kód, akkor `o`, különben `c`) + az utolsó 4 zóna léptetve.
@@ -241,6 +241,14 @@ A másodpercre pontos időzítés (`df(ss)` a `now`-ban) másodpercenkénti újr
 - a lélegzés kikapcsolható, vagy csak feloldott képernyőn futhat (`si(locked)` ✅).
 
 ---
+
+## Tesztelt (Érintésteszt, a felhasználó telefonján)
+
+- ✅ a koppintás átlátszó felületen és a motor képlete működik
+- ✅ `tc(cut, s, kezdet, hossz)` 0-tól számol; ✅ `"x"+1+2` = `x12` (összefűz)
+- ✅ a később felvett elem kerül felülre; ✅ `si(locked)`
+- ❌ a `+` összefűzés elhagyja a vezető nullákat (`"t"+tc(lpad,5,5,0)` = `t5`) → az idő most `+100000` eltolással, mindig 6 jeggyel kerül az állapotba
+- Az animációkból kikerült az `OPACITY` (az iránya bizonytalan)
 
 ## 9. Tesztelési terv – 0. fázis (5–6 elem)
 

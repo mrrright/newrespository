@@ -130,12 +130,12 @@ def ev_switch(glob, value):
 
 
 # Vezérlőgombok mellé: frissíti a nyitva tartás idejét, a kódot és az állapotot nem változtatja.
-EV_REFRESH = ev_switch("st", '$"t"+tc(lpad,gv(now),5,0)+if(gv(open)=1,"o","c")+gv(sq)$')
+EV_REFRESH = ev_switch("st", '$"t"+(gv(now)+100000)+if(gv(open)=1,"o","c")+gv(sq)$')
 
 
 def ev_zone(letter):
     tail = 'tc(cut,gv(sq),1,3)+"%s"' % letter
-    return ev_switch("st", '$"t"+tc(lpad,gv(now),5,0)+if(gv(open)=1|%s=gv(kod),"o","c")+%s$' % (tail, tail))
+    return ev_switch("st", '$"t"+(gv(now)+100000)+if(gv(open)=1|%s=gv(kod),"o","c")+%s$' % (tail, tail))
 
 
 def button(label_node, w, h, events, title=None, f=None):
@@ -165,12 +165,12 @@ def globals_list():
     add("felfedido", "NUMBER", "felfedés ideje (mp)", value=6.0, min=0, max=720)
     add("forgat", "SWITCH", "óránkénti átrendeződés", value=1)
     add("debug", "SWITCH", "hibakereső sor", value=1)
-    add("st", "TEXT", "ÁLLAPOT – ne módosítsd", value="t00000cxxxx")
+    add("st", "TEXT", "ÁLLAPOT – ne módosítsd", value="t100000cxxxx")
     add("now", "TEXT", "a nap eltelt másodpercei", value="$df(H)*3600+df(mm)*60+df(ss)$")
-    add("tt", "TEXT", "utolsó koppintás ideje", value="$tc(cut,gv(st),1,5)$")
-    add("fl", "TEXT", "o = nyitva, c = zárva", value="$tc(cut,gv(st),6,1)$")
-    add("sq", "TEXT", "utolsó 4 zóna", value="$tc(cut,gv(st),7,4)$")
-    add("z", "TEXT", "utolsó zóna", value="$tc(cut,gv(st),10,1)$")
+    add("tt", "TEXT", "utolsó koppintás ideje", value="$tc(cut,gv(st),1,6)-100000$")
+    add("fl", "TEXT", "o = nyitva, c = zárva", value="$tc(cut,gv(st),7,1)$")
+    add("sq", "TEXT", "utolsó 4 zóna", value="$tc(cut,gv(st),8,4)$")
+    add("z", "TEXT", "utolsó zóna", value="$tc(cut,gv(st),11,1)$")
     add("age", "TEXT", "mp az utolsó koppintás óta",
         value="$if(gv(now)>=gv(tt),gv(now)-gv(tt),gv(now)+86400-gv(tt))$")
     add("open", "TEXT", "nyitva van-e a vezérlés",
@@ -196,12 +196,11 @@ def day_line():
     return overlap(
         [track, prog, dot], title="Napvonal", anchor="CENTERLEFT",
         props={"position_padding_left": 72.0, "position_offset_y": 0.0},
-        f={"position_padding_left": "$si(rwidth)*0.1$", "position_offset_y": "$(df(mm)%5-2)*2$"},
+        f=dict(vis("gv(open)=0"), position_padding_left="$si(rwidth)*0.1$",
+               position_offset_y="$(df(mm)%5-2)*2$"),
         anims=[
             anim("LOOP_2W", [kf(0, "Y_OFFSET", 0), kf(25, "Y_OFFSET", -6), kf(50, "Y_OFFSET", 0),
                              kf(75, "Y_OFFSET", 6), kf(100, "Y_OFFSET", 0)], duration=20),
-            anim("FORMULA", [kf(0, "SCALE_X", 1), kf(0, "OPACITY", 0), kf(100, "SCALE_X", 0),
-                             kf(100, "OPACITY", 100)], duration=3, formula="$gv(open)$"),
         ])
 
 
@@ -230,7 +229,7 @@ def frame(fw, fh):
     ]
     for i, (anc, w, h, prop, aanc) in enumerate(specs):
         r = rect(w, h, fw=2, fh=2, fcolor="$gv(c_dim)$", anchor=anc)
-        a = appear([(prop, 0), ("OPACITY", 100)], [(prop, 1), ("OPACITY", 0)], delay=i)
+        a = appear([(prop, 0)], [(prop, 1)], delay=i)
         a["anchor"] = aanc
         r["internal_animations"] = [a]
         lines.append(r)
@@ -251,7 +250,7 @@ def zone(letter, idx):
                       "VERTICAL_CENTER", anchor="CENTER")],
             title="Tartalom " + letter, anchor="CENTER",
             f=vis('gv(z)="%s"&gv(age)<gv(felfedido)&gv(open)=0' % letter),
-            anims=[appear([("Y_OFFSET", 10), ("OPACITY", 100)], [("Y_OFFSET", 0), ("OPACITY", 0)])])
+            anims=[appear([("Y_OFFSET", 10)], [("Y_OFFSET", 0)])])
         items.append(content)
     return overlap(items, title="Zóna " + letter, anchor="TOPLEFT",
                    props={"position_offset_x": W / 3 * col, "position_offset_y": H / 4 * row},
@@ -296,7 +295,7 @@ def cell(fidx, title, content):
         f=dict(vis("gv(open)=1&gv(grp)=0"),
                position_offset_x="$si(rwidth)*0.1+si(rwidth)*0.8/3*(%s%%3)$" % c,
                position_offset_y="$si(rheight)*0.2+si(rheight)*0.2*((%s-%s%%3)/3)$" % (c, c)),
-        anims=[appear([("SCALE_XY", 0.8), ("OPACITY", 100)], [("SCALE_XY", 1), ("OPACITY", 0)], delay=fidx % 3)])
+        anims=[appear([("SCALE_XY", 0.8)], [("SCALE_XY", 1)], delay=fidx % 3)])
 
 
 def label(t, color="$gv(c_txt)$", size=MID):
@@ -373,8 +372,7 @@ def app_lists():
         for k in range(6):
             r = button(label("app %d" % (k + 1), size=MID), rw, rh, [{"type": "SINGLE_TAP", "action": "DISABLED"}],
                        title="App %s/%d – állítsd be: Launch App" % (lbl, k + 1))
-            r["internal_animations"] = [appear([("X_OFFSET", 40), ("OPACITY", 100)],
-                                               [("X_OFFSET", 0), ("OPACITY", 0)], delay=k)]
+            r["internal_animations"] = [appear([("X_OFFSET", 40)], [("X_OFFSET", 0)], delay=k)]
             rows.append(r)
         rows.append(button(label("összes", color="$gv(c_dim)$", size=SMALL), rw, rh,
                            [{"type": "SINGLE_TAP", "action": "LAUNCH_SHORTCUT", "intent": NOVA_DRAWER}]))
@@ -387,7 +385,7 @@ def app_lists():
 def debug_line():
     big = "$(si(rwidth)+si(rheight))/45$"
     return stack([text("[b]$gv(st)$[/b]", size=big, color="#FFB0B0B0"),
-                  text("kor $gv(age)$ · nyitva $gv(open)$ · zóna $gv(z)$", size=big, color="#FFB0B0B0")],
+                  text("kor $gv(age)$ · nyitva $gv(open)$ · zóna $gv(z)$ · kód $gv(sq)$", size=big, color="#FFB0B0B0")],
                  "VERTICAL_CENTER", anchor="BOTTOM", title="Debug",
                  f=dict(vis("gv(debug)=1"), position_padding_bottom="$si(rheight)*0.04$"))
 

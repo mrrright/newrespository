@@ -130,12 +130,12 @@ def ev_switch(glob, value):
 
 
 # Vezérlőgombok mellé: frissíti a nyitva tartás idejét, a kódot és az állapotot nem változtatja.
-EV_REFRESH = ev_switch("st", '$"t"+(gv(now)+100000)+if(gv(open)=1,"o","c")+gv(sq)$')
+EV_REFRESH = ev_switch("st", '$"t"+if(gv(open)=1,"o","c")+gv(sq)+gv(now)$')
 
 
 def ev_zone(letter):
     tail = 'tc(cut,gv(sq),1,3)+"%s"' % letter
-    return ev_switch("st", '$"t"+(gv(now)+100000)+if(gv(open)=1|%s=gv(kod),"o","c")+%s$' % (tail, tail))
+    return ev_switch("st", '$"t"+if(gv(open)=1|%s=gv(kod),"o","c")+%s+gv(now)$' % (tail, tail))
 
 
 def button(label_node, w, h, events, title=None, f=None):
@@ -165,12 +165,12 @@ def globals_list():
     add("felfedido", "NUMBER", "felfedés ideje (mp)", value=6.0, min=0, max=720)
     add("forgat", "SWITCH", "óránkénti átrendeződés", value=1)
     add("debug", "SWITCH", "hibakereső sor", value=1)
-    add("st", "TEXT", "ÁLLAPOT – ne módosítsd", value="t100000cxxxx")
+    add("st", "TEXT", "ÁLLAPOT – ne módosítsd", value="tcxxxx0")
     add("now", "TEXT", "a nap eltelt másodpercei", value="$df(H)*3600+df(mm)*60+df(ss)$")
-    add("tt", "TEXT", "utolsó koppintás ideje", value="$tc(cut,gv(st),1,6)-100000$")
-    add("fl", "TEXT", "o = nyitva, c = zárva", value="$tc(cut,gv(st),7,1)$")
-    add("sq", "TEXT", "utolsó 4 zóna", value="$tc(cut,gv(st),8,4)$")
-    add("z", "TEXT", "utolsó zóna", value="$tc(cut,gv(st),11,1)$")
+    add("tt", "TEXT", "utolsó koppintás ideje", value="$tc(cut,gv(st),6,tc(len,gv(st))-6)$")
+    add("fl", "TEXT", "o = nyitva, c = zárva", value="$tc(cut,gv(st),1,1)$")
+    add("sq", "TEXT", "utolsó 4 zóna", value="$tc(cut,gv(st),2,4)$")
+    add("z", "TEXT", "utolsó zóna", value="$tc(cut,gv(st),5,1)$")
     add("age", "TEXT", "mp az utolsó koppintás óta",
         value="$if(gv(now)>=gv(tt),gv(now)-gv(tt),gv(now)+86400-gv(tt))$")
     add("open", "TEXT", "nyitva van-e a vezérlés",
@@ -229,9 +229,6 @@ def frame(fw, fh):
     ]
     for i, (anc, w, h, prop, aanc) in enumerate(specs):
         r = rect(w, h, fw=2, fh=2, fcolor="$gv(c_dim)$", anchor=anc)
-        a = appear([(prop, 0)], [(prop, 1)], delay=i)
-        a["anchor"] = aanc
-        r["internal_animations"] = [a]
         lines.append(r)
     return lines
 
@@ -239,7 +236,14 @@ def frame(fw, fh):
 def zone(letter, idx):
     col, row = idx % 3, idx // 3
     zw, zh = "$si(rwidth)/3$", "$si(rheight)/4$"
-    items = [rect(zw, zh, fw=W / 3, fh=H / 4, title="Érintési felület")]
+    items = [rect(zw, zh, fw=W / 3, fh=H / 4, title="Érintési felület"),
+             rect(zw, zh, fw=W / 3, fh=H / 4, title="Teszt keret", color="#00000000",
+                  props={"paint_style": "STROKE", "paint_stroke": 2.0}, fcolor="#FF333333",
+                  extra_f=vis("gv(debug)=1")),
+             text(letter, size="$(si(rwidth)+si(rheight))/40$", anchor="TOPLEFT", title="Teszt betű",
+                  color='$if(gv(z)="%s",#FF43A047,#FF555555)$' % letter,
+                  extra_f=dict(vis("gv(debug)=1"), position_padding_left="$si(rwidth)*0.03$",
+                               position_padding_top="$si(rheight)*0.02$"))]
     if letter in ZONES:
         l1, l2 = ZONES[letter]
         fw, fh = "$si(rwidth)/3*0.85$", "$si(rheight)/4*0.5$"
@@ -249,8 +253,7 @@ def zone(letter, idx):
                        text(l2, size="$(si(rwidth)+si(rheight))/110$", color="$gv(c_dim)$")],
                       "VERTICAL_CENTER", anchor="CENTER")],
             title="Tartalom " + letter, anchor="CENTER",
-            f=vis('gv(z)="%s"&gv(age)<gv(felfedido)&gv(open)=0' % letter),
-            anims=[appear([("Y_OFFSET", 10)], [("Y_OFFSET", 0)])])
+            f=vis('gv(z)="%s"&gv(age)<gv(felfedido)&gv(open)=0' % letter))
         items.append(content)
     return overlap(items, title="Zóna " + letter, anchor="TOPLEFT",
                    props={"position_offset_x": W / 3 * col, "position_offset_y": H / 4 * row},

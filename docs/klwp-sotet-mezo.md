@@ -247,7 +247,8 @@ A másodpercre pontos időzítés (`df(ss)` a `now`-ban) másodpercenkénti újr
 - ✅ a koppintás átlátszó felületen és a motor képlete működik
 - ✅ `tc(cut, s, kezdet, hossz)` 0-tól számol; ✅ `"x"+1+2` = `x12` (összefűz)
 - ✅ a később felvett elem kerül felülre; ✅ `si(locked)`
-- ❌ a `+` összefűzés elhagyja a vezető nullákat (`"t"+tc(lpad,5,5,0)` = `t5`) → az idő most `+100000` eltolással, mindig 6 jeggyel kerül az állapotba
+- ❌ a `+` összefűzés elhagyja a vezető nullákat (`"t"+tc(lpad,5,5,0)` = `t5`) → **új állapotformátum: `t` + jelző (`o`/`c`) + utolsó 4 zóna + idő a végén**, pl. `tocjal83854`. Így nincs szükség kitöltésre; `tt` = `tc(cut,gv(st),6,tc(len,gv(st))-6)`, `fl` = 1. karakter, `sq` = 2–5., `z` = 5.
+- A felfedésből kikerültek az animációk; tesztmódban (`debug=1`) a zónák kerete és betűje látszik, az utoljára érintett zöld
 - Az animációkból kikerült az `OPACITY` (az iránya bizonytalan)
 
 ## 9. Tesztelési terv – 0. fázis (5–6 elem)

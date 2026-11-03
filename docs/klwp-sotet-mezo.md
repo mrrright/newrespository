@@ -52,7 +52,7 @@ Teljesen fekete AMOLED képernyő. Alapból csak egy hajszálvékony vonal láts
 
 | Név | Típus | Érték | |
 |---|---|---|---|
-| `kod` | TEXT (vagy SECRET) | pl. `alej` | a kopogó kód 4 zónabetűje (lásd 3.1). SECRET-ként tárolva védettebb, de hogy a `gv()` olvassa-e, az ❓; ha nem, TEXT |
+| `kod` | TEXT (vagy SECRET) | `cjal` (hal) | a kopogó kód 4 zónabetűje (lásd 3.1). SECRET-ként tárolva védettebb, de hogy a `gv()` olvassa-e, az ❓; ha nem, TEXT |
 | `nyitido` | NUMBER | `45` | ennyi mp-ig marad nyitva a vezérlés |
 | `felfedido` | NUMBER | `6` | ennyi mp-ig látszik egy felfedett zóna |
 | `forgat` | SWITCH | `1` | óránkénti átrendeződés be/ki |
@@ -100,7 +100,7 @@ Betűket használok számok helyett, mert a `+` csupa számjegyű szövegeket va
 ### 3.2 Az állapotszöveg és a koppintás képlete
 
 ```
- st  =  t  05000  o  alej
+ st  =  t  05000  o  cjal
         │  │      │  └─ az utolsó 4 zóna (pozíció 7–10)
         │  │      └──── o = nyitva / c = zárva (pozíció 6)
         │  └─────────── koppintás ideje, 5 jegy (pozíció 1–5)
@@ -174,7 +174,9 @@ Minden zónához tartozik egy tartalomcsoport (a zónacsoporton belül, a koppin
 | i | holnap | `holnap ↓$wf(min, 1)$° ↑$wf(max, 1)$°` / `[s=0.6]$tc(cap,wf(cond, 1))$[/s]` 🔧 |
 | j, k, l | (üres – kódnak jó) | – |
 
-**Kódjavaslat:** üres és tartalmas zónák keveréke, például `a` `l` `e` `j` (bal felső → jobb alsó → közép → bal alsó). Az üres zónák koppintása nem mutat semmit, így kívülről még kevésbé látszik a minta.
+**A kód: „halacska”** – jobb fent (`c`) → bal lent (`j`) → bal fent (`a`) → jobb lent (`l`) = `cjal`. Nem rajzolni, hanem a négy sarokra egymás után koppintani kell (a KLWP a húzást nem érzékeli). A `kod` globálisban átírható.
+
+**Generált preset:** `klwp/sotet-mezo/SotetMezo.klwp`, generátor: `klwp/sotet-mezo/build.py`.
 
 ---
 
